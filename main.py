@@ -1,49 +1,48 @@
-# main.py
-# FINAL CORRECTED VERSION
+# Supposing that all the classes developed for the project
+# are contained in the file 'impl.py', then:
 
-# 1. DÜZELTME: Eksik olan veri modeli sınıflarını (Journal, Category) import ediyoruz.
-from impl import (
-    CategoryUploadHandler, 
-    CategoryQueryHandler,
-    JournalUploadHandler, 
-    JournalQueryHandler,
-    FullQueryEngine,
-    Journal,
-    Category
-)
+# 1) Importing all the classes for handling the relational database
+from impl import CategoryUploadHandler, CategoryQueryHandler
 
-# --- 1. Define all paths and endpoints ---
-RELATIONAL_DB_PATH = "relational.db"
-JSON_DATA_FILE = "data/scimago.json"
-CSV_DATA_FILE = "data/doaj.csv"
-GRAPH_DB_ENDPOINT = "http://localhost:9999/bigdata/sparql" # Correct endpoint
+# 2) Importing all the classes for handling graph database
+from impl import JournalUploadHandler, JournalQueryHandler
 
-# --- 2. Upload Data to Both Databases ---
-print("--- Starting Data Uploads ---")
+# 3) Importing the class for dealing with mashup queries
+from impl import FullQueryEngine
+from impl import Journal, Category, Area
+# Once all the classes are imported, first create the relational
+# database using the related source data
+rel_path = "relational.db"
+cat = CategoryUploadHandler()
+cat.setDbPathOrUrl(rel_path)
+cat.pushDataToDb("data/scimago.json")
+# Please remember that one could, in principle, push one or more files
+# calling the method one or more times (even calling the method twice
+# specifying the same file!)
 
-print("Uploading relational data from JSON...")
-category_uploader = CategoryUploadHandler()
-category_uploader.setDbPathOrUrl(RELATIONAL_DB_PATH)
-category_uploader.pushDataToDb(JSON_DATA_FILE)
-print("Relational data upload complete.")
+# Then, create the graph database (remember first to run the
+# Blazegraph instance) using the related source data
+grp_endpoint = "http://127.0.0.1:9999/blazegraph/sparql"
+jou = JournalUploadHandler()
+jou.setDbPathOrUrl(grp_endpoint)
+jou.pushDataToDb("data/doaj.csv")
+# Please remember that one could, in principle, push one or more files
+# calling the method one or more times (even calling the method twice
+# specifying the same file!)
 
-print("\nUploading graph data from CSV...")
-journal_uploader = JournalUploadHandler(GRAPH_DB_ENDPOINT)
-journal_uploader.pushDataToDb(CSV_DATA_FILE)
-print("Graph data upload complete.")
+# In the next passage, create the query handlers for both
+# the databases, using the related classes
+cat_qh = CategoryQueryHandler()
+cat_qh.setDbPathOrUrl(rel_path)
 
-print("\n--- Data Uploads Finished ---\n")
+jou_qh = JournalQueryHandler()
+jou_qh.setDbPathOrUrl(grp_endpoint)
 
-
-# --- 3. Set Up the Full Query Engine ---
-print("--- Setting Up Query Engine ---")
-category_querier = CategoryQueryHandler(RELATIONAL_DB_PATH)
-journal_querier = JournalQueryHandler(GRAPH_DB_ENDPOINT)
-
+# Finally, create a advanced mashup object for asking
+# about data
 engine = FullQueryEngine()
-engine.addCategoryHandler(category_querier)
-engine.addJournalHandler(journal_querier)
-print("Query Engine is ready.\n")
+engine.addCategoryHandler(cat_qh)
+engine.addJournalHandler(jou_qh)
 
 
 # --- 4. Run Queries and See the Results! ---
