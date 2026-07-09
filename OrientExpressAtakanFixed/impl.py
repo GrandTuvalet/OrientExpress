@@ -191,7 +191,10 @@ class CategoryQueryHandler(QueryHandler):
         conn.close()
         return df
     def getById(self, id):
-        return self._execute_query("SELECT category_id, MIN(quartile) AS quartile, MIN(area) AS area FROM journal_category WHERE category_id=? GROUP BY category_id", (id,))
+        by_category = self._execute_query("SELECT category_id, MIN(quartile) AS quartile, MIN(area) AS area FROM journal_category WHERE category_id=? GROUP BY category_id", (id,))
+        if not by_category.empty:
+            return by_category
+        return self._execute_query("SELECT DISTINCT area FROM journal_category WHERE area=?", (id,))
     def getAllCategories(self):
         return self._execute_query("SELECT category_id, MIN(quartile) AS quartile, MIN(area) AS area FROM journal_category GROUP BY category_id")
     def getAllAreas(self):
@@ -371,10 +374,21 @@ class BasicQueryEngine:
     def getEntityById(self, id: str):
         dj = self._get_combined_df(self.journalQuery, 'getById', id)
         if not dj.empty:
-            return self._wide_df_to_journals(self._df_to_wide(dj))[0]
+            journal = self._wide_df_to_journals(self._df_to_wide(dj))[0]
+            links_df = self._get_combined_df(self.categoryQuery, 'getCategoryLinks')
+            if not links_df.empty:
+                own_links = links_df[links_df['issn'].isin(journal.getIds())].drop_duplicates(subset=['category_id'])
+                for _, row in own_links.iterrows():
+                    journal.addCategory(Category(
+                        cat_id=row['category_id'], title=row['category_id'],
+                        quartile=row['quartile'], area=Area(area_id=row['area'], name=row['area'])
+                    ))
+            return journal
         dc = self._get_combined_df(self.categoryQuery, 'getById', id)
         if not dc.empty:
-            return self._df_to_categories(dc)[0]
+            if 'category_id' in dc.columns:
+                return self._df_to_categories(dc)[0]
+            return self._df_to_areas(dc)[0]
         return None
 
     def getAllJournals(self):
