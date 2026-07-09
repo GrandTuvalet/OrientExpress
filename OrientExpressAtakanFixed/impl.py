@@ -1,5 +1,4 @@
 # impl.py
-# Final, complete, and verified version of the project library.
 
 # --- Imports ---
 import json
@@ -435,8 +434,6 @@ class BasicQueryEngine:
         df = self._get_combined_df(self.categoryQuery, 'getAreasAssignedToCategories', category_ids)
         return self._df_to_areas(df)
 
-# In impl.py, replace only the FullQueryEngine class with this.
-
 class FullQueryEngine(BasicQueryEngine):
     def _explode_ids(self, journal_df_long, subject_col='subject'):
         short_pred = journal_df_long['predicate'].str.rsplit('/', n=1).str[-1].str.rsplit('#', n=1).str[-1]
@@ -447,7 +444,6 @@ class FullQueryEngine(BasicQueryEngine):
         journal_df_long = self._get_combined_df(self.journalQuery, 'getAllJournals')
         if journal_df_long.empty: return []
 
-        # FIX IS HERE: The subject column from the handler is 'subject', not 'journal'.
         journals_df_wide = self._df_to_wide(journal_df_long, subject_col='subject')
         id_map = self._explode_ids(journal_df_long)
 
@@ -469,11 +465,13 @@ class FullQueryEngine(BasicQueryEngine):
         journal_df_long = self._get_combined_df(self.journalQuery, 'getAllJournals')
         if journal_df_long.empty: return []
 
-        # FIX IS HERE: The subject column from the handler is 'subject', not 'journal'.
         journals_df_wide = self._df_to_wide(journal_df_long, subject_col='subject')
 
         if licenses and 'license' in journals_df_wide.columns:
-            journals_df_wide = journals_df_wide[journals_df_wide['license'].isin(licenses)]
+            def has_license(value):
+                tokens = {t.strip() for t in str(value).split(',')}
+                return bool(tokens & licenses)
+            journals_df_wide = journals_df_wide[journals_df_wide['license'].apply(has_license)]
 
         if not area_ids:
             return self._wide_df_to_journals(journals_df_wide)
@@ -491,7 +489,6 @@ class FullQueryEngine(BasicQueryEngine):
         journal_df_long = self._get_combined_df(self.journalQuery, 'getAllJournals')
         if journal_df_long.empty: return []
 
-        # FIX IS HERE: The subject column from the handler is 'subject', not 'journal'.
         journals_df_wide = self._df_to_wide(journal_df_long, subject_col='subject')
 
         diamond_journals_df = journals_df_wide[journals_df_wide['apc'].astype(str).str.lower() == 'false']

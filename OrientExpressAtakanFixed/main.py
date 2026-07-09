@@ -35,7 +35,7 @@ jou.pushDataToDb("data/doaj.csv")
 cat_qh = CategoryQueryHandler()
 cat_qh.setDbPathOrUrl(rel_path)
 
-jou_qh = JournalQueryHandler()
+jou_qh = JournalQueryHandler(category_db_path=rel_path)
 jou_qh.setDbPathOrUrl(grp_endpoint)
 
 # Finally, create a advanced mashup object for asking
