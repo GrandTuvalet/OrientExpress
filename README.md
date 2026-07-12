@@ -1,6 +1,6 @@
 # OrientExpress
 
-This repository holds three versions of the Data Science course project (a query engine over DOAJ journal data and Scimago category/area data, combining a graph database and a relational database).
+ This repository holds three versions of the Data Science course project (a query engine over DOAJ journal data and Scimago category/area data, combining a graph database and a relational database).
 
 ## Structure
 
@@ -10,7 +10,7 @@ This repository holds three versions of the Data Science course project (a query
 
 ## What changed
 
-Upon revision of the professor's feedback, every reported issue was fixed, the legacy version was kept as-is for reference, and both Atakan's and Ceyda's code were updated with the new functions requested:
+  Upon revision of the professor's feedback, every reported issue was fixed, the legacy version was kept as-is for reference. 
 
 **Fixes applied to both `AtakanFixed` and `CeydaFixed`:**
 - `getPublisher()` now returns a plain string instead of an undocumented `Publisher` object
@@ -20,10 +20,10 @@ Upon revision of the professor's feedback, every reported issue was fixed, the l
 - mashup queries (`getJournalsInCategoriesWithQuartile`, `getJournalsInAreasWithLicense`, `getDiamondJournalsInAreasAndCategoriesWithQuartile`) no longer over-count journals
 - `getEntityById` now correctly returns `Area` objects (previously only `Journal`/`Category` were reachable) and populates a journal's `getCategories()` as expected
 
+ Atakan's and Ceyda's code were updated with the new functions requested:
+
 **New functions:**
 - `AtakanFixed`: `getJournalNotPublishedBy`, `getJournalWithCategories`, `getMultiCategoriesJournalsAvoidingPuglishers`
 - `CeydaFixed`: `getAreasByName`, `getJournalsWithSealAndNoAPC`, `getDiamondJournalsInAreas`
 
-## Tested and confirmed
-
-Both fixed versions were run end-to-end against a live Blazegraph instance with the full exemplar dataset, and pass the official course test suite (`test.py`) in full: 5/5 tests, `OK`.
+.
